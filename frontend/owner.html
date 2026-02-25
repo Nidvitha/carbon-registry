@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carbon Registry - Owner</title>
+</head>
+<body>
+  <h1>Carbon Registry - Register Project</h1>
+
+  <label for="projectName">Project Name:</label><br /><br />
+  <input type="text" id="projectName" placeholder="Enter project name" /><br /><br />
+  <button onclick="registerProject()">Register Project</button>
+
+  <script>
+    async function registerProject() {
+      const name = document.getElementById("projectName").value;
+
+      if (!name) {
+        alert("Please enter a project name");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5000/register-project", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert("Project registered successfully!\nTx Hash: " + data.txHash);
+          document.getElementById("projectName").value = "";
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (err) {
+        alert("Failed to connect to server: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carbon Registry - Investor</title>
+</head>
+<body>
+  <h1>Carbon Registry - Investor Panel</h1>
+
+  <!-- Projects Section -->
+  <h2>Projects</h2>
+  <button onclick="loadProjects()">Load Projects</button>
+  <ul id="projectList"></ul>
+
+  <hr />
+
+  <!-- Credits Section -->
+  <h2>Carbon Credits</h2>
+  <button onclick="loadCredits()">Load Credits</button>
+  <ul id="creditList"></ul>
+
+  <hr />
+
+  <!-- Retire Credit Section -->
+  <h2>Retire Credit</h2>
+  <label for="retireId">Credit ID:</label><br /><br />
+  <input type="number" id="retireId" placeholder="Enter credit ID" /><br /><br />
+  <button onclick="retireCredit()">Retire Credit</button>
+
+  <script>
+    async function loadProjects() {
+      const list = document.getElementById("projectList");
+      list.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch("http://localhost:5000/projects");
+        const projects = await res.json();
+
+        if (projects.length === 0) {
+          list.innerHTML = "<li>No projects found</li>";
+          return;
+        }
+
+        list.innerHTML = "";
+        projects.forEach((p) => {
+          const li = document.createElement("li");
+          li.textContent =
+            "ID: " + p.id +
+            " | Name: " + p.name +
+            " | Owner: " + p.owner +
+            " | Verified: " + p.verified;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        list.innerHTML = "";
+        alert("Failed to load projects: " + err.message);
+      }
+    }
+
+    async function loadCredits() {
+      const list = document.getElementById("creditList");
+      list.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch("http://localhost:5000/credits");
+        const credits = await res.json();
+
+        if (credits.length === 0) {
+          list.innerHTML = "<li>No credits found</li>";
+          return;
+        }
+
+        list.innerHTML = "";
+        credits.forEach((c) => {
+          const li = document.createElement("li");
+          li.textContent =
+            "ID: " + c.id +
+            " | Project: " + c.projectId +
+            " | Amount: " + c.amount +
+            " | Owner: " + c.owner +
+            " | Retired: " + c.retired;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        list.innerHTML = "";
+        alert("Failed to load credits: " + err.message);
+      }
+    }
+
+    async function retireCredit() {
+      const creditId = document.getElementById("retireId").value;
+
+      if (!creditId) {
+        alert("Please enter a credit ID");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5000/retire-credit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ creditId }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert("Credit retired successfully!\nTx Hash: " + data.txHash);
+          document.getElementById("retireId").value = "";
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (err) {
+        alert("Failed to connect to server: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carbon Registry - Admin</title>
+</head>
+<body>
+  <h1>Carbon Registry - Admin Panel</h1>
+
+  <!-- Verify Project Section -->
+  <h2>Verify Project</h2>
+  <label for="verifyId">Project ID:</label><br /><br />
+  <input type="number" id="verifyId" placeholder="Enter project ID" /><br /><br />
+  <button onclick="verifyProject()">Verify Project</button>
+
+  <hr />
+
+  <!-- Issue Credit Section -->
+  <h2>Issue Carbon Credit</h2>
+  <label for="creditProjectId">Project ID:</label><br /><br />
+  <input type="number" id="creditProjectId" placeholder="Enter project ID" /><br /><br />
+
+  <label for="creditAmount">Amount (tonnes CO2):</label><br /><br />
+  <input type="number" id="creditAmount" placeholder="Enter amount" /><br /><br />
+
+  <label for="creditTo">Investor Address:</label><br /><br />
+  <input type="text" id="creditTo" placeholder="0x..." /><br /><br />
+
+  <button onclick="issueCredit()">Issue Credit</button>
+
+  <script>
+    async function verifyProject() {
+      const projectId = document.getElementById("verifyId").value;
+
+      if (!projectId) {
+        alert("Please enter a project ID");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5000/verify-project", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert("Project verified successfully!\nTx Hash: " + data.txHash);
+          document.getElementById("verifyId").value = "";
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (err) {
+        alert("Failed to connect to server: " + err.message);
+      }
+    }
+
+    async function issueCredit() {
+      const projectId = document.getElementById("creditProjectId").value;
+      const amount = document.getElementById("creditAmount").value;
+      const to = document.getElementById("creditTo").value;
+
+      if (!projectId || !amount || !to) {
+        alert("Please fill in all fields");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5000/issue-credit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId, amount, to }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert("Credit issued successfully!\nTx Hash: " + data.txHash);
+          document.getElementById("creditProjectId").value = "";
+          document.getElementById("creditAmount").value = "";
+          document.getElementById("creditTo").value = "";
+        } else {
+          alert("Error: " + data.error);
+        }
+      } catch (err) {
+        alert("Failed to connect to server: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
